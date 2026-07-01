@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <style>
+        body { font-family: Arial, sans-serif; min-height: 100vh; margin: 0; background: url('/static/images/medical_insuracne_image.webp') no-repeat center center fixed; background-size: cover; display: flex; justify-content: center; align-items: center; }
+        .container { background: rgba(255,255,255,0.90); padding: 30px; border-radius: 10px; width: 400px; }
+        label { display: block; margin-top: 12px; font-weight: bold; }
+        input { width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box; }
+        button { margin-top: 20px; padding: 10px; background: #2d6be4; color: white; border: none; cursor: pointer; width: 100%; }
+        #msg { margin-top: 15px; font-size: 1em; }
+        .link { margin-top: 12px; text-align: center; }
+        .link a { color: #2d6be4; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Register</h2>
+        <form id="registerForm">
+            <label>Username <input type="text" name="user_name" required></label>
+            <label>Password <input type="password" name="password" required></label>
+            <label>Email <input type="email" name="email_id" required></label>
+            <label>Contact Number <input type="text" name="contact_number" required></label>
+            <label>Date of Birth <input type="date" name="dob" required></label>
+            <button type="submit">Register</button>
+        </form>
+        <div id="msg"></div>
+        <div class="link"><a href="/login_page">Already have an account? Login</a></div>
+    </div>
+    <script>
+        document.getElementById("registerForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const res = await fetch("/register", { method: "POST", body: new FormData(this) });
+            const data = await res.json();
+            const msg = document.getElementById("msg");
+            msg.textContent = data.message;
+            msg.style.color = data.status === "success" ? "green" : "red";
+            if (data.status === "success") setTimeout(() => window.location.href = "/login_page", 1500);
+        });
+    </script>
+</body>
+</html>

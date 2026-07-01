@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Medical Insurance Predictor</title>
+    <style>
+        body { font-family: Arial, sans-serif; min-height: 100vh; margin: 0; background: url('/static/images/medical_insuracne_image.webp') no-repeat center center fixed; background-size: cover; display: flex; justify-content: center; align-items: center; }
+        .container { background: rgba(255,255,255,0.88); padding: 30px; border-radius: 10px; width: 420px; }
+        label { display: block; margin-top: 12px; font-weight: bold; }
+        input, select { width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box; }
+        button { margin-top: 20px; padding: 10px 20px; background: #2d6be4; color: white; border: none; cursor: pointer; width: 100%; }
+        #result { margin-top: 20px; font-size: 1.2em; color: green; }
+    </style>
+</head>
+<body>
+    <div class="container">
+    <h2>Medical Insurance Charge Predictor</h2>
+    <form id="predictForm">
+        <label>Age <input type="number" name="age" min="1" required></label>
+        <label>BMI <input type="number" name="bmi" step="0.01" min="0" required></label>
+        <label>Children <input type="number" name="children" min="0" required></label>
+        <label>Gender
+            <select name="gender" id="gender"></select>
+        </label>
+        <label>Smoker
+            <select name="smoker" id="smoker"></select>
+        </label>
+        <label>Region
+            <select name="region" id="region"></select>
+        </label>
+        <button type="submit">Predict Charges</button>
+    </form>
+    <div id="result"></div>
+    </div>
+
+    <script>
+        async function loadOptions(url, selectId) {
+            const res = await fetch(url);
+            const options = await res.json();
+            const select = document.getElementById(selectId);
+            options.forEach(opt => {
+                const el = document.createElement("option");
+                el.value = opt;
+                el.textContent = opt;
+                select.appendChild(el);
+            });
+        }
+
+        loadOptions("/gender_options", "gender");
+        loadOptions("/smoker_options", "smoker");
+        loadOptions("/region_options", "region");
+
+        document.getElementById("predictForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const res = await fetch("/predict_charges", { method: "POST", body: formData });
+            const data = await res.json();
+            document.getElementById("result").textContent = "Predicted Charges: $" + data["Predicted Charges"].toFixed(2);
+        });
+    </script>
+</body>
+</html>

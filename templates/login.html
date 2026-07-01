@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; min-height: 100vh; margin: 0; background: url('/static/images/medical_insuracne_image.webp') no-repeat center center fixed; background-size: cover; display: flex; justify-content: center; align-items: center; }
+        .container { background: rgba(255,255,255,0.90); padding: 30px; border-radius: 10px; width: 380px; }
+        label { display: block; margin-top: 12px; font-weight: bold; }
+        input { width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box; }
+        button { margin-top: 20px; padding: 10px; background: #2d6be4; color: white; border: none; cursor: pointer; width: 100%; }
+        #msg { margin-top: 15px; font-size: 1em; }
+        .links { margin-top: 12px; display: flex; justify-content: space-between; }
+        .links a { color: #2d6be4; text-decoration: none; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <label>Username <input type="text" name="user_name" required></label>
+            <label>Password <input type="password" name="password" required></label>
+            <button type="submit">Login</button>
+        </form>
+        <div id="msg"></div>
+        <div class="links">
+            <a href="/register_page">New user? Register</a>
+            <a href="/forget_password_page">Forgot Password?</a>
+        </div>
+    </div>
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const res = await fetch("/login", { method: "POST", body: new FormData(this) });
+            const data = await res.json();
+            const msg = document.getElementById("msg");
+            msg.textContent = data.message;
+            msg.style.color = data.status === "success" ? "green" : "red";
+            if (data.status === "success") {
+                sessionStorage.setItem("access_token", data.access_token);
+                window.location.href = "/prediction_page?token=" + data.access_token;
+            }
+        });
+    </script>
+</body>
+</html>
