@@ -1,6 +1,6 @@
 import os
 FLASK_HOST="0.0.0.0"
-FLASK_PORT=5000
+FLASK_PORT=8000
 
 MONGODB_URI = 'mongodb://localhost:27017/'
 MONGO_URL = MONGODB_URI
