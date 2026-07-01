@@ -4,7 +4,6 @@ import json
 
 import pandas as pd
 import numpy as np
-from src.database import get_data_collection
 
 class MedicalInsurance():
     def __init__(self):
@@ -60,8 +59,5 @@ class MedicalInsurance():
         return self.prediction
 
     def save_data_in_db(self):
-        input_data = self.data
-        input_data.update({"Prediction" : self.prediction[0]})
-        data_collection = get_data_collection()
-
-        data_collection.insert_one(input_data)
+        # MongoDB persistence has been removed. Prediction results are not stored.
+        return

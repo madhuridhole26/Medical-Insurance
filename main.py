@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, request,request,render_template,url_for,redirect
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity  
-import pymongo
 import config
 from src.utils import MedicalInsurance
 import datetime
@@ -15,9 +14,25 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = "flask_session_secret"   # Set the expi
 
 jwt = JWTManager(app)
 
-mongo_client = pymongo.MongoClient(config.MONGO_URL)
-db = mongo_client[config.MONGO_DB_NAME]
-users_collection = db[config.MONGO_USERS_COLLECTION]
+STATIC_USERS = [
+    {
+        "username": "admin",
+        "email_id": "admin@example.com",
+        "password": "admin123",
+        "dob": "1990-01-01",
+        "contact_number": "0000000000"
+    }
+]
+
+def find_static_user(user_name=None, email_id=None, password=None):
+    for user in STATIC_USERS:
+        if password is not None and user["password"] != password:
+            continue
+        if user_name and user["username"] == user_name:
+            return user
+        if email_id and user["email_id"] == email_id:
+            return user
+    return None
 
 @app.route('/')
 def home():
@@ -45,25 +60,7 @@ def prediction_page():
 
 @app.route('/register', methods=['POST'])
 def register_user():
-    user_data = request.form
-    user_name = user_data.get('user_name')
-    password = user_data.get('password')
-    email_id = user_data.get('email_id')
-    contact_number = user_data.get('contact_number')
-    dob = user_data.get('dob')
-
-    response = users_collection.find_one({"email_id": email_id})
-    if not response:
-        users_collection.insert_one({
-            "username": user_name,
-            "password": password,
-            "email_id": email_id,
-            "contact_number": contact_number,
-            "dob": dob
-        })
-        return jsonify({"status": "success", "message": "User registered successfully"})
-    else:
-        return jsonify({"status": "fail", "message": "User already exists"})
+    return jsonify({"status": "fail", "message": "Registration is disabled. Use the static login credentials."})
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -72,13 +69,7 @@ def login():
     email_id = user_data.get('email_id')
     password = user_data.get('password')
 
-    query = {"password": password}
-    if user_name:
-        query["username"] = user_name
-    elif email_id:
-        query["email_id"] = email_id
-
-    response = users_collection.find_one(query)
+    response = find_static_user(user_name=user_name, email_id=email_id, password=password)
     if response:
         identity = user_name if user_name else email_id
         access_token = create_access_token(
@@ -94,12 +85,10 @@ def forgot_password_post():
     user_data = request.form
     user_name = user_data.get('user_name')
     dob = user_data.get('dob')
-    new_password = user_data.get('new_password')
 
-    response = users_collection.find_one({"username": user_name, "dob": dob})
-    if response:
-        users_collection.update_one({"username": user_name, "dob": dob}, {"$set": {"password": new_password}})
-        return jsonify({"status": "success", "message": "Password updated successfully"})
+    response = find_static_user(user_name=user_name, email_id=None, password=None)
+    if response and response.get('dob') == dob:
+        return jsonify({"status": "fail", "message": "Password reset is disabled for static credentials."})
     else:
         return jsonify({"status": "fail", "message": "Invalid username or date of birth"})
 
